@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-// import "../css/Register.css";
+import { Link, useNavigate } from "react-router-dom";
+import { registerUser } from "../api/auth";
+import "../css/Registeration.css"
 
 function Register() {
+  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     name: "",
@@ -18,7 +20,7 @@ function Register() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (form.password !== form.confirmPassword) {
@@ -26,14 +28,32 @@ function Register() {
       return;
     }
 
-    console.log(form);
+    try {
+      const response = await registerUser({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+      });
 
-    // Register API
+      console.log(response.data);
+
+      alert("Registration Successful!");
+
+      // Redirect to login page
+      navigate("/");
+
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        error.response?.data?.detail ||
+        "Registration Failed"
+      );
+    }
   };
 
   return (
     <div className="container">
-
       <div className="card">
 
         <h1>Create Account</h1>
@@ -89,7 +109,6 @@ function Register() {
         </div>
 
       </div>
-
     </div>
   );
 }

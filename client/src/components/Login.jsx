@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { loginUser } from "../api/auth";
 import "../css/Login.css";
 
 function Login() {
@@ -15,12 +16,31 @@ function Login() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log(form);
+    try {
+      const response = await loginUser(form);
 
-    // API Call Here
+      localStorage.setItem(
+        "token",
+        response.data.access_token
+      );
+
+      alert("Login Successful");
+
+      console.log(response.data);
+
+      // Navigate to dashboard later
+
+    } catch (error) {
+      alert(
+        error.response?.data?.detail ||
+        "Login Failed"
+      );
+
+      console.error(error);
+    }
   };
 
   return (
