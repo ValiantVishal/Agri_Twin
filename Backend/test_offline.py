@@ -2,34 +2,22 @@ import sys
 import os
 import types
 
-# 1. Setup paths
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__)) # .../Backend
-PROJECT_ROOT = os.path.dirname(CURRENT_DIR)               # .../Agri_Twin
+# 1. Map virtual 'backend' module to the current 'Backend' directory BEFORE importing ai
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 if CURRENT_DIR not in sys.path:
     sys.path.insert(0, CURRENT_DIR)
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
 
-# 2. VIRTUAL MODULE ALIAS FIX: Map 'backend' -> local 'ai' modules in sys.modules
-# Fixes case mismatch (folder 'Backend' vs code importing 'backend')
-try:
-    import ai
-    import ai.crop_data
-    
-    backend_mod = types.ModuleType('backend')
-    backend_mod.ai = ai
-    sys.modules['backend'] = backend_mod
-    sys.modules['backend.ai'] = ai
-    sys.modules['backend.ai.crop_data'] = ai.crop_data
-except Exception as e:
-    pass
+# Setup virtual backend package pointing directly to current folder
+backend_pkg = types.ModuleType("backend")
+backend_pkg.__path__ = [CURRENT_DIR]
+sys.modules["backend"] = backend_pkg
 
-# Force Hugging Face transformers into strict local offline mode
+# 2. Force Hugging Face transformers into strict local offline mode
 os.environ["TRANSFORMERS_OFFLINE"] = "1"
 os.environ["HF_HUB_OFFLINE"] = "1"
 
-# Import engine logic safely
+# 3. Import engine logic safely
 from ai.engine import (
     get_fertilizer_recommendation,
     query_farm_memory,
