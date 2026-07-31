@@ -4,9 +4,9 @@ Exposes local inference engine functions, deterministic lookup algorithms,
 and historical regional climate data.
 """
 
-from backend.ai.crop_data import CROP_DATA
-from backend.ai.climate_data import MONTHLY_RAINFALL_MM
-from backend.ai.engine import (
+from ai.crop_data import CROP_DATA
+from ai.climate_data import MONTHLY_RAINFALL_MM
+from ai.engine import (
     get_fertilizer_recommendation,
     query_farm_memory,
     get_seasonal_advisory,

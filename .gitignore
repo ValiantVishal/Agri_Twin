@@ -273,3 +273,25 @@ Backend/venv311/Scripts/unsloth.exe
 Backend/venv311/Scripts/uvicorn.exe
 Backend/venv311/Scripts/wheel.exe
 Backend/venv311/share/man/man1/isympy.1
+
+# Python
+venv/
+venv311/
+__pycache__/
+*.pyc
+
+# AI Models
+training_outputs/
+agritwin_finetuned/
+
+# Datasets
+agritwin_dataset/
+
+# Python cache
+.pytest_cache/
+
+# Node
+node_modules/
+
+# Environment
+.env

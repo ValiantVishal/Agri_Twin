@@ -1,8 +1,14 @@
+# 1. ALWAYS import unsloth first before trl, transformers, or peft
+try:
+    from unsloth import FastLanguageModel
+    HAS_UNSLOTH = True
+except ImportError:
+    HAS_UNSLOTH = False
+
 import os
 import torch
 from datasets import load_from_disk
-from trl import SFTTrainer
-from transformers import TrainingArguments
+from trl import SFTTrainer, SFTConfig
 
 # Resolve relative paths cleanly from script location
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -20,7 +26,6 @@ def train():
     is_unsloth_model = False
     
     try:
-        from unsloth import FastLanguageModel
         model, tokenizer = FastLanguageModel.from_pretrained(
             model_name="Qwen/Qwen2.5-3B-Instruct",
             max_seq_length=2048,
@@ -60,38 +65,40 @@ def train():
         )
         model = get_peft_model(base_model, lora_config)
 
+    # Configure SFT arguments using SFTConfig for modern TRL versions
+    sft_config = SFTConfig(
+        dataset_text_field="text",
+        max_seq_length=2048,
+        dataset_num_proc=2,
+        per_device_train_batch_size=2,
+        gradient_accumulation_steps=4,
+        warmup_steps=10,
+        num_train_epochs=1,
+        learning_rate=2e-4,
+        fp16=not torch.cuda.is_bf16_supported(),
+        bf16=torch.cuda.is_bf16_supported(),
+        logging_steps=10,
+        output_dir=os.path.join(BASE_DIR, "training_outputs"),
+        save_strategy="no",       # Disables mid-run checkpoint saving to prevent PicklingError
+        save_total_limit=0,
+        optim="adamw_8bit"
+    )
+
     trainer = SFTTrainer(
         model=model,
         processing_class=tokenizer,
         train_dataset=dataset,
-        dataset_text_field="text",
-        max_seq_length=2048,
-        dataset_num_proc=2,
-        args=TrainingArguments(
-            per_device_train_batch_size=2,
-            gradient_accumulation_steps=4,
-            warmup_steps=10,
-            num_train_epochs=1,            # 1 full epoch (414 steps) is optimal for 3.3k samples
-            learning_rate=2e-4,
-            fp16=not torch.cuda.is_bf16_supported(),
-            bf16=torch.cuda.is_bf16_supported(),
-            logging_steps=10,
-            output_dir=os.path.join(BASE_DIR, "training_outputs"),
-            save_strategy="no",            # DISABLES mid-run checkpoints (Fixes PicklingError)
-            save_total_limit=0,
-            optim="adamw_8bit"
-        )
+        args=sft_config,
     )
 
     print("[Training] Training in progress...")
     trainer.train()
 
-    print(f"[Training] Saving adapter weights to '{OUTPUT_PATH}'...")
-    if is_unsloth_model:
-        model.save_pretrained_merged(OUTPUT_PATH, tokenizer, save_method="lora")
-    else:
-        model.save_pretrained(OUTPUT_PATH)
-        tokenizer.save_pretrained(OUTPUT_PATH)
+    print(f"[Training] Saving model and config files to '{OUTPUT_PATH}'...")
+    
+    # Correct save calls: Saves adapter_config.json, weights, and tokenizer files
+    model.save_pretrained(OUTPUT_PATH)
+    tokenizer.save_pretrained(OUTPUT_PATH)
 
     print("[Training] SUCCESS: Model fine-tuning complete!")
 

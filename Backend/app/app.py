@@ -1,12 +1,19 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-# Database and Models
-from app.database import Base, engine, get_db
-from app.models import User
-from app.schemas import Register, Login
-from app.crud import create_user, get_user_by_email
-from app.auth import verify_password
+from .database import Base
+from .database import engine
+from .database import get_db
+
+from .models import User
+
+from .schemas import Register
+from .schemas import Login
+
+from .crud import create_user
+from .crud import get_user_by_email
+
+from .auth import verify_password
 
 # Voice Router
 from app.router.voice import router as voice_router
@@ -14,13 +21,13 @@ from app.router.voice import router as voice_router
 # Create Database Tables
 Base.metadata.create_all(bind=engine)
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(title="AgriTwin API")
 
 # Include the Voice Router
 app.include_router(voice_router)
 
-
-# --- AUTHENTICATION ROUTES ---
 
 @app.post("/register")
 def register(user: Register, db: Session = Depends(get_db)):
@@ -56,6 +63,7 @@ def login(user: Login, db: Session = Depends(get_db)):
             "name": db_user.name,
             "email": db_user.email
         }
+
     }
 
 
