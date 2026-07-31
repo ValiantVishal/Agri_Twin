@@ -1,18 +1,23 @@
 import os
+try:
+    from unsloth import FastLanguageModel
+    HAS_UNSLOTH = True
+except ImportError:
+    HAS_UNSLOTH = False
 import torch
 from datasets import load_from_disk
 from trl import SFTTrainer
 from transformers import TrainingArguments
 
-DATASET_PATH = os.path.join("backend", "agritwin_dataset")
-OUTPUT_PATH = os.path.join("backend", "agritwin_finetuned")
+DATASET_PATH = os.path.join("./Backend", "agritwin_dataset")
+OUTPUT_PATH = os.path.join("./Backend", "agritwin_finetuned")
 
 def train():
-    if not os.path.exists(DATASET_PATH):
-        raise FileNotFoundError(f"Dataset path '{DATASET_PATH}' not found. Run prepare_data.py first!")
+    # if not os.path.exists(DATASET_PATH):
+    #     raise FileNotFoundError(f"Dataset path '{DATASET_PATH}' not found. Run prepare_data.py first!")
 
     print("[Training] Loading cached dataset...")
-    dataset = load_from_disk(DATASET_PATH)
+    dataset = load_from_disk("./agritwin_dataset")
 
     print("[Training] Initializing Qwen/Qwen2.5-3B-Instruct model...")
     try:
@@ -56,7 +61,7 @@ def train():
 
     trainer = SFTTrainer(
         model=model,
-        tokenizer=tokenizer,
+        processing_class=tokenizer,
         train_dataset=dataset,
         dataset_text_field="text",
         max_seq_length=2048,
