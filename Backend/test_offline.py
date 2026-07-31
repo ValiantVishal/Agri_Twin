@@ -1,23 +1,16 @@
 import sys
 import os
-import types
 
-# 1. Map virtual 'backend' module to the current 'Backend' directory BEFORE importing ai
+# Ensure Backend directory is in Python path
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-
 if CURRENT_DIR not in sys.path:
     sys.path.insert(0, CURRENT_DIR)
 
-# Setup virtual backend package pointing directly to current folder
-backend_pkg = types.ModuleType("backend")
-backend_pkg.__path__ = [CURRENT_DIR]
-sys.modules["backend"] = backend_pkg
-
-# 2. Force Hugging Face transformers into strict local offline mode
+# Force Hugging Face transformers into strict local offline mode
 os.environ["TRANSFORMERS_OFFLINE"] = "1"
 os.environ["HF_HUB_OFFLINE"] = "1"
 
-# 3. Import engine logic safely
+# Import engine logic safely
 from ai.engine import (
     get_fertilizer_recommendation,
     query_farm_memory,
