@@ -3,7 +3,7 @@ import json
 import random
 from datasets import Dataset
 from huggingface_hub import hf_hub_download
-from backend.ai.tnau_qa import TNAU_QA_PAIRS
+from tnau_qa import TNAU_QA_PAIRS
 
 CROPS = ["paddy", "rice", "groundnut", "sugarcane", "maize"]
 
