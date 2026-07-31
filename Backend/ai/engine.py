@@ -2,13 +2,21 @@ import os
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from peft import PeftModel
-from Backend.ai.crop_data import CROP_DATA
-from Backend.ai.climate_data import MONTHLY_RAINFALL_MM
 
+# Relative imports to work regardless of module path execution
+from .crop_data import CROP_DATA
+from .climate_data import MONTHLY_RAINFALL_MM
 ADAPTER_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "agritwin_finetuned"))
 BASE_MODEL = "Qwen/Qwen2.5-3B-Instruct"
 
 print(f"[AgriTwin Engine] Initializing model adapter from: {ADAPTER_DIR}")
+
+# 1. First attempt: Try loading from local adapter/tokenizer directly
+# 2. Fallback: If base model weights aren't merged in adapter dir, load base model with local_files_only
+try:
+    tokenizer = AutoTokenizer.from_pretrained(ADAPTER_DIR, trust_remote_code=True, local_files_only=True)
+except Exception:
+    tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, trust_remote_code=True, local_files_only=True)
 
 bnb_config = BitsAndBytesConfig(
     load_in_4bit=True,
@@ -16,15 +24,26 @@ bnb_config = BitsAndBytesConfig(
     bnb_4bit_compute_dtype=torch.float16
 )
 
-base_model = AutoModelForCausalLM.from_pretrained(
-    BASE_MODEL,
-    quantization_config=bnb_config,
-    device_map="auto",
-    trust_remote_code=True
-)
+try:
+    # Try loading directly if ADAPTER_DIR is a fully merged model
+    model = AutoModelForCausalLM.from_pretrained(
+        ADAPTER_DIR,
+        quantization_config=bnb_config,
+        device_map="auto",
+        trust_remote_code=True,
+        local_files_only=True
+    )
+except Exception:
+    # Otherwise load base model offline + apply PEFT adapter
+    base_model = AutoModelForCausalLM.from_pretrained(
+        BASE_MODEL,
+        quantization_config=bnb_config,
+        device_map="auto",
+        trust_remote_code=True,
+        local_files_only=True
+    )
+    model = PeftModel.from_pretrained(base_model, ADAPTER_DIR, local_files_only=True)
 
-model = PeftModel.from_pretrained(base_model, ADAPTER_DIR)
-tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, trust_remote_code=True)
 model.eval()
 
 print("[AgriTwin Engine] SUCCESS: Model loaded and ready for inference.")
