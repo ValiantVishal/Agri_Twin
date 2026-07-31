@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../api/auth";
 import "../css/Login.css";
 
 function Login() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -28,8 +29,10 @@ function Login() {
       );
 
       alert("Login Successful");
+      navigate("/profile");
 
       console.log(response.data);
+
 
       // Navigate to dashboard later
 
