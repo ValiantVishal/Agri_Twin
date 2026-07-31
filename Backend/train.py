@@ -1,25 +1,24 @@
 import os
-try:
-    from unsloth import FastLanguageModel
-    HAS_UNSLOTH = True
-except ImportError:
-    HAS_UNSLOTH = False
 import torch
 from datasets import load_from_disk
 from trl import SFTTrainer
 from transformers import TrainingArguments
 
-DATASET_PATH = os.path.join("./Backend", "agritwin_dataset")
-OUTPUT_PATH = os.path.join("./Backend", "agritwin_finetuned")
+# Resolve relative paths cleanly from script location
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATASET_PATH = os.path.join(BASE_DIR, "agritwin_dataset")
+OUTPUT_PATH = os.path.join(BASE_DIR, "agritwin_finetuned")
 
 def train():
-    # if not os.path.exists(DATASET_PATH):
-    #     raise FileNotFoundError(f"Dataset path '{DATASET_PATH}' not found. Run prepare_data.py first!")
+    if not os.path.exists(DATASET_PATH):
+        raise FileNotFoundError(f"Dataset path '{DATASET_PATH}' not found. Run prepare_data.py first!")
 
     print("[Training] Loading cached dataset...")
-    dataset = load_from_disk("./agritwin_dataset")
+    dataset = load_from_disk(DATASET_PATH)
 
     print("[Training] Initializing Qwen/Qwen2.5-3B-Instruct model...")
+    is_unsloth_model = False
+    
     try:
         from unsloth import FastLanguageModel
         model, tokenizer = FastLanguageModel.from_pretrained(
@@ -36,6 +35,8 @@ def train():
             bias="none",
             use_gradient_checkpointing="unsloth",
         )
+        is_unsloth_model = True
+        print("[Training] Loaded successfully using Unsloth acceleration.")
     except Exception as e:
         print(f"[Training Notice] Unsloth load skipped ({e}). Falling back to standard PeftModel...")
         from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
@@ -65,17 +66,20 @@ def train():
         train_dataset=dataset,
         dataset_text_field="text",
         max_seq_length=2048,
+        dataset_num_proc=2,
         args=TrainingArguments(
             per_device_train_batch_size=2,
             gradient_accumulation_steps=4,
             warmup_steps=10,
-            num_train_epochs=2,
+            num_train_epochs=1,            # 1 full epoch (414 steps) is optimal for 3.3k samples
             learning_rate=2e-4,
             fp16=not torch.cuda.is_bf16_supported(),
             bf16=torch.cuda.is_bf16_supported(),
             logging_steps=10,
-            output_dir="training_outputs",
-            save_strategy="epoch"
+            output_dir=os.path.join(BASE_DIR, "training_outputs"),
+            save_strategy="no",            # DISABLES mid-run checkpoints (Fixes PicklingError)
+            save_total_limit=0,
+            optim="adamw_8bit"
         )
     )
 
@@ -83,8 +87,12 @@ def train():
     trainer.train()
 
     print(f"[Training] Saving adapter weights to '{OUTPUT_PATH}'...")
-    model.save_pretrained(OUTPUT_PATH)
-    tokenizer.save_pretrained(OUTPUT_PATH)
+    if is_unsloth_model:
+        model.save_pretrained_merged(OUTPUT_PATH, tokenizer, save_method="lora")
+    else:
+        model.save_pretrained(OUTPUT_PATH)
+        tokenizer.save_pretrained(OUTPUT_PATH)
+
     print("[Training] SUCCESS: Model fine-tuning complete!")
 
 if __name__ == "__main__":
