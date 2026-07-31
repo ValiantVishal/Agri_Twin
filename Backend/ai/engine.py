@@ -1,64 +1,47 @@
 import os
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
-from peft import PeftModel
+from unsloth import FastLanguageModel
 
 # Relative imports to work regardless of module path execution
 from .crop_data import CROP_DATA
 from .climate_data import MONTHLY_RAINFALL_MM
 
 ADAPTER_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "agritwin_finetuned"))
-BASE_MODEL = "Qwen/Qwen2.5-3B-Instruct"
 
-print(f"[AgriTwin Engine] Initializing model adapter from: {ADAPTER_DIR}")
+print(f"[AgriTwin Engine] Initializing model from: {ADAPTER_DIR}")
 
-# 1. First attempt: Try loading from local adapter/tokenizer directly
-# 2. Fallback: If base model weights aren't merged in adapter dir, load base model with local_files_only
+# Load seamlessly using Unsloth (perfect for offline local directories)
 try:
-    tokenizer = AutoTokenizer.from_pretrained(ADAPTER_DIR, trust_remote_code=True, local_files_only=True)
-except Exception:
-    tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, trust_remote_code=True, local_files_only=True)
-
-bnb_config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_quant_type="nf4",
-    bnb_4bit_compute_dtype=torch.float16
-)
-
-try:
-    # Try loading directly if ADAPTER_DIR is a fully merged model
-    model = AutoModelForCausalLM.from_pretrained(
-        ADAPTER_DIR,
-        quantization_config=bnb_config,
-        device_map="auto",
-        trust_remote_code=True,
-        local_files_only=True
+    model, tokenizer = FastLanguageModel.from_pretrained(
+        model_name=ADAPTER_DIR,
+        max_seq_length=2048,
+        load_in_4bit=True
     )
-except Exception:
-    # Otherwise load base model offline + apply PEFT adapter
-    base_model = AutoModelForCausalLM.from_pretrained(
-        BASE_MODEL,
-        quantization_config=bnb_config,
-        device_map="auto",
-        trust_remote_code=True,
-        local_files_only=True
-    )
-    model = PeftModel.from_pretrained(base_model, ADAPTER_DIR, local_files_only=True)
-
-model.eval()
-
-print("[AgriTwin Engine] SUCCESS: Model loaded and ready for inference.")
+    FastLanguageModel.for_inference(model)
+    print("[AgriTwin Engine] SUCCESS: Model loaded and ready for inference.")
+except Exception as e:
+    print(f"[AgriTwin Engine] Failed to load model: {e}")
+    model, tokenizer = None, None
 
 def _generate(prompt: str, max_new_tokens: int = 250) -> str:
-    formatted = f"<|im_start|>user\n{prompt}<|im_end|>\n<|im_start|>assistant\n"
-    inputs = tokenizer(formatted, return_tensors="pt").to("cuda")
+    if model is None or tokenizer is None:
+        return "Error: AI model is not loaded."
+
+    messages = [{"role": "user", "content": prompt}]
+    inputs = tokenizer.apply_chat_template(
+        messages, 
+        tokenize=True, 
+        add_generation_prompt=True, 
+        return_tensors="pt"
+    ).to("cuda")
 
     with torch.no_grad():
         outputs = model.generate(
-            **inputs,
+            input_ids=inputs,
             max_new_tokens=max_new_tokens,
             temperature=0.3,
             do_sample=True,
+            use_cache=True,
             pad_token_id=tokenizer.eos_token_id
         )
 
