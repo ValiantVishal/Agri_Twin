@@ -1,34 +1,7 @@
 from pydantic import BaseModel, Field
-from pydantic import EmailStr
 from typing import List, Optional
 from datetime import datetime
 
-
-class Register(BaseModel):
-    name: str
-    email: EmailStr
-    password: str
-
-
-class Login(BaseModel):
-    email: EmailStr
-    password: str
-
-
-class ProfileCreate(BaseModel):
-    phone: str
-    state: str
-    district: str
-    village: str
-    language: str
-    farmerType: str
-    experience: int
-    crop: str
-    irrigation: str
-    soilType: str
-
-
-# --- Plot Schemas ---
 
 class PlotPoint(BaseModel):
     lat: float = Field(..., ge=-90.0, le=90.0, description="Latitude must be between -90 and 90")
