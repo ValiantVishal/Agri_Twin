@@ -1,0 +1,25 @@
+# ==============================================================================
+# AgriTwin Backend Dependencies
+# NOTE: For RTX 50-series GPUs (Blackwell), run PyTorch cu128 install first:
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+# ==============================================================================
+
+# Core AI / LLM Stack
+transformers>=4.44.0
+datasets>=2.20.0
+peft>=0.12.0
+trl>=0.9.6
+accelerate>=0.33.0
+bitsandbytes>=0.43.3
+
+# Data Processing & Math
+pandas>=2.2.0
+numpy>=1.26.0
+
+# Web Framework / API Backend (For FastAPI integration)
+fastapi>=0.111.0
+uvicorn>=0.30.0
+pydantic>=2.8.0
+
+# Optional Unsloth Acceleration (If running inside Linux/WSL2)
+# unsloth
