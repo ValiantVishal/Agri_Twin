@@ -1,33 +1,40 @@
 import sys
 import os
+import types
 
-# --- FIX FOR MODULE PATHS ---
-# Resolve the project root dynamically and add it to sys.path
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
+# 1. Setup paths
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__)) # .../Backend
+PROJECT_ROOT = os.path.dirname(CURRENT_DIR)               # .../Agri_Twin
 
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
 if CURRENT_DIR not in sys.path:
     sys.path.insert(0, CURRENT_DIR)
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+# 2. VIRTUAL MODULE ALIAS FIX: Map 'backend' -> local 'ai' modules in sys.modules
+# Fixes case mismatch (folder 'Backend' vs code importing 'backend')
+try:
+    import ai
+    import ai.crop_data
+    
+    backend_mod = types.ModuleType('backend')
+    backend_mod.ai = ai
+    sys.modules['backend'] = backend_mod
+    sys.modules['backend.ai'] = ai
+    sys.modules['backend.ai.crop_data'] = ai.crop_data
+except Exception as e:
+    pass
 
 # Force Hugging Face transformers into strict local offline mode
 os.environ["TRANSFORMERS_OFFLINE"] = "1"
 os.environ["HF_HUB_OFFLINE"] = "1"
 
 # Import engine logic safely
-try:
-    from ai.engine import (
-        get_fertilizer_recommendation,
-        query_farm_memory,
-        get_seasonal_advisory
-    )
-except ImportError:
-    from backend.ai.engine import (
-        get_fertilizer_recommendation,
-        query_farm_memory,
-        get_seasonal_advisory
-    )
+from ai.engine import (
+    get_fertilizer_recommendation,
+    query_farm_memory,
+    get_seasonal_advisory
+)
 
 def test_fine_tuned_llm():
     print("\n--- TEST 4: Direct Offline Fine-Tuned LLM Inference ---")
