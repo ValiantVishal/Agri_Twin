@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 // import "../css/ProfileSetup.css";
+import { saveProfile } from "../api/profile";
 
 function ProfileSetup() {
 
@@ -19,23 +20,48 @@ function ProfileSetup() {
         soilType:""
     });
 
-    const handleChange = (e)=>{
+    const handleChange = (e) => {
+
         setForm({
+    
             ...form,
-            [e.target.name]:e.target.value
+    
+            [e.target.name]: e.target.value
+    
         });
-    }
 
-    const handleSubmit=(e)=>{
+    };
+    
+    const handleSubmit = async (e) => {
+
         e.preventDefault();
+    
+        const profile = {
+    
+            ...form,
+    
+            experience: Number(form.experience)
+    
+        };
 
-        console.log(form);
-
-        // API 
-        alert("Profile Saved");
-
-        navigate("/dashboard");
-    }
+        try {
+    
+            const response = await saveProfile(profile);
+    
+            console.log(response.data);
+    
+            alert("Profile Saved Successfully!");
+    
+            navigate("/dashboard");
+    
+        } catch (error) {
+    
+            console.error(error.response?.data || error);
+    
+            alert("Unable to save profile.");
+    
+        }
+    };
 
     return(
         <div className="container">

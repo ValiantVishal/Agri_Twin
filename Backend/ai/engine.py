@@ -2,8 +2,8 @@ import os
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from peft import PeftModel
-from backend.ai.crop_data import CROP_DATA
-from backend.ai.climate_data import MONTHLY_RAINFALL_MM
+from Backend.ai.crop_data import CROP_DATA
+from Backend.ai.climate_data import MONTHLY_RAINFALL_MM
 
 ADAPTER_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "agritwin_finetuned"))
 BASE_MODEL = "Qwen/Qwen2.5-3B-Instruct"

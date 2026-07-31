@@ -19,12 +19,10 @@ function App() {
           element={<Register />}
         />
 
-        {/* <Route
+        <Route
           path="/profile"
           element={<ProfileSetup />}
-        /> */}
-
-        <Route path="/profile" element={<ProfileSetup />} />
+        />
 
         <Route
           path="/dashboard"
