@@ -6,6 +6,7 @@ from peft import PeftModel
 # Relative imports to work regardless of module path execution
 from .crop_data import CROP_DATA
 from .climate_data import MONTHLY_RAINFALL_MM
+
 ADAPTER_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "agritwin_finetuned"))
 BASE_MODEL = "Qwen/Qwen2.5-3B-Instruct"
 
