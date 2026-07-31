@@ -39,3 +39,24 @@ Backend/venv/
 agritwin_env/
 
 Backend/unsloth_compiled_cache
+# Unsloth compiled trainers
+Backend/unsloth_compiled_cache/
+Backend/unsloth_compiled_*/
+Backend/unsloth_compiled*/
+
+# If the files are directly inside a folder
+Backend/unsloth_compiled_*/**
+
+
+# Ignore all trainer files
+**/Unsloth*Trainer.py
+**/moe_utils.py
+
+# Python cache
+**/__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+Backend/venv/
+.venv/
