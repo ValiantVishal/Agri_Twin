@@ -28,16 +28,20 @@ def _generate(prompt: str, max_new_tokens: int = 250) -> str:
         return "Error: AI model is not loaded."
 
     messages = [{"role": "user", "content": prompt}]
+    
+    # Return as a dict containing both input_ids and attention_mask
     inputs = tokenizer.apply_chat_template(
         messages, 
         tokenize=True, 
         add_generation_prompt=True, 
-        return_tensors="pt"
+        return_tensors="pt",
+        return_dict=True
     ).to("cuda")
 
     with torch.no_grad():
         outputs = model.generate(
-            input_ids=inputs,
+            input_ids=inputs["input_ids"],
+            attention_mask=inputs["attention_mask"], # Explicitly pass attention mask
             max_new_tokens=max_new_tokens,
             temperature=0.3,
             do_sample=True,
