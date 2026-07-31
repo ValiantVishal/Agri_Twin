@@ -94,12 +94,11 @@ def train():
     print("[Training] Training in progress...")
     trainer.train()
 
-    print(f"[Training] Saving adapter weights to '{OUTPUT_PATH}'...")
-    if is_unsloth_model:
-        model.save_pretrained_merged(OUTPUT_PATH, tokenizer, save_method="lora")
-    else:
-        model.save_pretrained(OUTPUT_PATH)
-        tokenizer.save_pretrained(OUTPUT_PATH)
+    print(f"[Training] Saving model and config files to '{OUTPUT_PATH}'...")
+    
+    # Correct save calls: Saves adapter_config.json, weights, and tokenizer files
+    model.save_pretrained(OUTPUT_PATH)
+    tokenizer.save_pretrained(OUTPUT_PATH)
 
     print("[Training] SUCCESS: Model fine-tuning complete!")
 
