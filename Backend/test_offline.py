@@ -1,29 +1,46 @@
+import sys
 import os
+
+# --- FIX FOR MODULE PATHS ---
+# Resolve the project root dynamically and add it to sys.path
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
+
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+if CURRENT_DIR not in sys.path:
+    sys.path.insert(0, CURRENT_DIR)
 
 # Force Hugging Face transformers into strict local offline mode
 os.environ["TRANSFORMERS_OFFLINE"] = "1"
 os.environ["HF_HUB_OFFLINE"] = "1"
 
-# Import engine logic safely from local 'ai' directory
-from ai.engine import (
-    get_fertilizer_recommendation,
-    query_farm_memory,
-    get_seasonal_advisory
-)
+# Import engine logic safely
+try:
+    from ai.engine import (
+        get_fertilizer_recommendation,
+        query_farm_memory,
+        get_seasonal_advisory
+    )
+except ImportError:
+    from backend.ai.engine import (
+        get_fertilizer_recommendation,
+        query_farm_memory,
+        get_seasonal_advisory
+    )
 
 def test_fine_tuned_llm():
     print("\n--- TEST 4: Direct Offline Fine-Tuned LLM Inference ---")
     try:
         from unsloth import FastLanguageModel
         
-        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-        MODEL_PATH = os.path.join(BASE_DIR, "agritwin_finetuned")
+        MODEL_PATH = os.path.join(CURRENT_DIR, "agritwin_finetuned")
         
         if not os.path.exists(MODEL_PATH):
             print(f"[LLM Error] Path '{MODEL_PATH}' not found!")
             return
 
-        print("[LLM Test] Loading local fine-tuned model from 'agritwin_finetuned'...")
+        print(f"[LLM Test] Loading local fine-tuned model from '{MODEL_PATH}'...")
         model, tokenizer = FastLanguageModel.from_pretrained(
             model_name=MODEL_PATH,
             max_seq_length=2048,
