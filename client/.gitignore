@@ -22,3 +22,20 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+#ai 
+# Heavy model weights and generated fine-tuned outputs
+Backend/agritwin_finetuned/
+agritwin_finetuned/
+training_outputs/
+
+# Cached training datasets
+Backend/agritwin_dataset/
+agritwin_dataset/
+
+# Python Virtual Environments
+Backend/venv/
+agritwin_env/
+
+Backend/unsloth_compiled_cache
