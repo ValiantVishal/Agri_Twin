@@ -1,183 +1,195 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-// import "../css/ProfileSetup.css";
 import { saveProfile } from "../api/profile";
 
 function ProfileSetup() {
+  const navigate = useNavigate();
 
-    const navigate = useNavigate();
+  const [form, setForm] = useState({
+    phone: "",
+    state: "",
+    district: "",
+    village: "",
+    language: "Tamil",
+    farmerType: "",
+    experience: "",
+    crop: "",
+    irrigation: "",
+    soilType: ""
+  });
 
-    const [form, setForm] = useState({
-        phone:"",
-        state:"",
-        district:"",
-        village:"",
-        language:"Tamil",
-        farmerType:"",
-        experience:"",
-        crop:"",
-        irrigation:"",
-        soilType:""
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
     });
-
-    const handleChange = (e) => {
-
-        setForm({
+  };
     
-            ...form,
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     
-            [e.target.name]: e.target.value
-    
-        });
-
-    };
-    
-    const handleSubmit = async (e) => {
-
-        e.preventDefault();
-    
-        const profile = {
-    
-            ...form,
-    
-            experience: Number(form.experience)
-    
-        };
-
-        try {
-    
-            const response = await saveProfile(profile);
-    
-            console.log(response.data);
-    
-            alert("Profile Saved Successfully!");
-    
-            navigate("/dashboard");
-    
-        } catch (error) {
-    
-            console.error(error.response?.data || error);
-    
-            alert("Unable to save profile.");
-    
-        }
+    const profile = {
+      ...form,
+      experience: Number(form.experience)
     };
 
-    return(
-        <div className="container">
+    try {
+      const response = await saveProfile(profile);
+      console.log(response.data);
+      alert("Profile Saved Successfully!");
+      navigate("/dashboard");
+    } catch (error) {
+      console.error(error.response?.data || error);
+      const errorMsg = error.response?.data?.detail || "Unable to save profile.";
+      alert(`Error: ${errorMsg}`);
+    }
+  };
 
-            <div className="card">
+  return (
+    <div className="container">
+      <div className="card" style={{ maxWidth: "520px" }}>
+        <h1>Configure Profile</h1>
+        <p>Enter your agricultural preferences and village location</p>
 
-                <h1>Complete Your Profile</h1>
-
-                <p>Tell us about your farm</p>
-
-                <form onSubmit={handleSubmit}>
-
-                    <input
-                        name="phone"
-                        placeholder="Phone Number"
-                        value={form.phone}
-                        onChange={handleChange}
-                        required
-                    />
-
-                    <input
-                        name="state"
-                        placeholder="State"
-                        value={form.state}
-                        onChange={handleChange}
-                        required
-                    />
-
-                    <input
-                        name="district"
-                        placeholder="District"
-                        value={form.district}
-                        onChange={handleChange}
-                        required
-                    />
-
-                    <input
-                        name="village"
-                        placeholder="Village"
-                        value={form.village}
-                        onChange={handleChange}
-                        required
-                    />
-
-                    <select
-                        name="language"
-                        value={form.language}
-                        onChange={handleChange}
-                    >
-                        <option>Tamil</option>
-                        <option>English</option>
-                    </select>
-
-                    <select
-                        name="farmerType"
-                        value={form.farmerType}
-                        onChange={handleChange}
-                        required
-                    >
-                        <option value="">Farmer Type</option>
-                        <option>New Farmer</option>
-                        <option>Experienced Farmer</option>
-                        <option>Retired Farmer</option>
-                    </select>
-
-                    <input
-                        type="number"
-                        name="experience"
-                        placeholder="Years of Experience"
-                        value={form.experience}
-                        onChange={handleChange}
-                    />
-
-                    <input
-                        name="crop"
-                        placeholder="Primary Crop"
-                        value={form.crop}
-                        onChange={handleChange}
-                    />
-
-                    <select
-                        name="irrigation"
-                        value={form.irrigation}
-                        onChange={handleChange}
-                    >
-                        <option value="">Irrigation Type</option>
-                        <option>Canal</option>
-                        <option>Borewell</option>
-                        <option>Rain-fed</option>
-                        <option>Drip</option>
-                    </select>
-
-                    <select
-                        name="soilType"
-                        value={form.soilType}
-                        onChange={handleChange}
-                    >
-                        <option value="">Soil Type</option>
-                        <option>Clay</option>
-                        <option>Loamy</option>
-                        <option>Sandy</option>
-                        <option>Red</option>
-                        <option>Black</option>
-                    </select>
-
-                    <button>
-                        Save & Continue
-                    </button>
-
-                </form>
-
+        <form onSubmit={handleSubmit}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ fontSize: "0.8rem", fontWeight: "700", textTransform: "uppercase", color: "var(--text-muted)" }}>Phone Number</label>
+              <input
+                name="phone"
+                placeholder="e.g. +91 98765 43210"
+                value={form.phone}
+                onChange={handleChange}
+                required
+              />
             </div>
+            
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ fontSize: "0.8rem", fontWeight: "700", textTransform: "uppercase", color: "var(--text-muted)" }}>Language preference</label>
+              <select
+                name="language"
+                value={form.language}
+                onChange={handleChange}
+              >
+                <option value="Tamil">தமிழ் (Tamil)</option>
+                <option value="English">English</option>
+              </select>
+            </div>
+          </div>
 
-        </div>
-    )
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", color: "var(--text-muted)" }}>State</label>
+              <input
+                name="state"
+                placeholder="State"
+                value={form.state}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", color: "var(--text-muted)" }}>District</label>
+              <input
+                name="district"
+                placeholder="District"
+                value={form.district}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ fontSize: "0.75rem", fontWeight: "700", textTransform: "uppercase", color: "var(--text-muted)" }}>Village</label>
+              <input
+                name="village"
+                placeholder="Village"
+                value={form.village}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
 
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ fontSize: "0.8rem", fontWeight: "700", textTransform: "uppercase", color: "var(--text-muted)" }}>Farmer Type</label>
+              <select
+                name="farmerType"
+                value={form.farmerType}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Select Option</option>
+                <option>New Farmer</option>
+                <option>Experienced Farmer</option>
+                <option>Retired Farmer</option>
+              </select>
+            </div>
+            
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ fontSize: "0.8rem", fontWeight: "700", textTransform: "uppercase", color: "var(--text-muted)" }}>Experience (Years)</label>
+              <input
+                type="number"
+                name="experience"
+                placeholder="e.g. 5"
+                value={form.experience}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <label style={{ fontSize: "0.8rem", fontWeight: "700", textTransform: "uppercase", color: "var(--text-muted)" }}>Primary Crop</label>
+            <input
+              name="crop"
+              placeholder="e.g. Rice, Sugarcane, Cotton"
+              value={form.crop}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ fontSize: "0.8rem", fontWeight: "700", textTransform: "uppercase", color: "var(--text-muted)" }}>Irrigation Type</label>
+              <select
+                name="irrigation"
+                value={form.irrigation}
+                onChange={handleChange}
+              >
+                <option value="">Select Option</option>
+                <option>Canal</option>
+                <option>Borewell</option>
+                <option>Rain-fed</option>
+                <option>Drip</option>
+              </select>
+            </div>
+            
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={{ fontSize: "0.8rem", fontWeight: "700", textTransform: "uppercase", color: "var(--text-muted)" }}>Soil Type</label>
+              <select
+                name="soilType"
+                value={form.soilType}
+                onChange={handleChange}
+              >
+                <option value="">Select Option</option>
+                <option>Clay</option>
+                <option>Loamy</option>
+                <option>Sandy</option>
+                <option>Red</option>
+                <option>Black</option>
+              </select>
+            </div>
+          </div>
+
+          <button style={{ marginTop: "12px" }}>
+            Save & Continue
+          </button>
+        </form>
+      </div>
+    </div>
+  );
 }
 
 export default ProfileSetup;

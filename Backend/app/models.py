@@ -49,3 +49,18 @@ class Plot(Base):
     is_active = Column(Boolean, default=True, nullable=False)
 
     farmer = relationship("User")
+
+
+class ActivityLog(Base):
+    __tablename__ = "activity_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    farmer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    plot_id = Column(String(36), ForeignKey("plots.id"), nullable=True)
+    entry_text = Column(String, nullable=False)
+    entry_language = Column(String(10), nullable=False)  # 'ta' or 'en'
+    input_mode = Column(String(20), nullable=False)  # 'voice' or 'text'
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+
+    farmer = relationship("User")
+    plot = relationship("Plot")

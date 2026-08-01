@@ -1,116 +1,135 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: "Segoe UI", Arial, Helvetica, sans-serif;
-    background: linear-gradient(135deg, #e2e7f2, #3b82f6);
-    min-height: 100vh;
-}
+/* Grounded Farmland Redesign for Login & Register screens */
 
 .container {
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  background-color: var(--bg-parchment);
+  position: relative;
+  overflow: hidden;
 }
 
+/* Subtle hand-drawn contour line texture as card background */
 .card {
-    width: 100%;
-    max-width: 420px;
-    background: #ffffff;
-    padding: 40px;
-    border-radius: 16px;
-    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 440px;
+  background-color: white;
+  padding: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--border-soil);
+  box-shadow: var(--shadow-organic);
+  position: relative;
+}
+
+/* Warm terracotta soil line at the top of the card */
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: var(--clay-red);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
 }
 
 .card h1 {
-    text-align: center;
-    font-size: 30px;
-    color: #1f2937;
-    margin-bottom: 10px;
+  font-family: var(--font-heading);
+  text-align: center;
+  font-size: 1.875rem;
+  color: var(--text-main);
+  margin-bottom: 8px;
+  font-weight: 750;
 }
 
 .card p {
-    text-align: center;
-    color: #6b7280;
-    margin-bottom: 30px;
-    font-size: 15px;
+  text-align: center;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+  font-size: 0.95rem;
 }
 
 form {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-input {
-    width: 100%;
-    padding: 14px 16px;
-    border: 1px solid #d1d5db;
-    border-radius: 10px;
-    font-size: 15px;
-    transition: 0.3s ease;
+input, select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid var(--border-soil);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background-color: #fcfbfa;
+  transition: all 0.2s ease;
 }
 
-input:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-    outline: none;
+input:focus, select:focus {
+  border-color: var(--paddy-green);
+  background-color: white;
+  outline: none;
 }
 
+/* High-contrast Paddy Green primary button */
 button {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 10px;
-    background: #2563eb;
-    color: #ffffff;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.3s ease;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 6px;
+  background-color: var(--paddy-green);
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(27, 77, 44, 0.15);
 }
 
 button:hover {
-    background: #1d4ed8;
-    transform: translateY(-2px);
+  background-color: var(--paddy-green-hover);
+  transform: translateY(-1px);
 }
 
 button:active {
-    transform: scale(0.98);
+  transform: translateY(1px);
 }
 
 .bottom {
-    text-align: center;
-    margin-top: 25px;
-    color: #6b7280;
-    font-size: 15px;
+  text-align: center;
+  margin-top: 24px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }
 
 .bottom a {
-    color: #2563eb;
-    text-decoration: none;
-    font-weight: 600;
+  color: var(--clay-red);
+  text-decoration: none;
+  font-weight: 700;
+  border-bottom: 1.5px solid transparent;
+  transition: all 0.2s;
+  padding-bottom: 2px;
 }
 
 .bottom a:hover {
-    text-decoration: underline;
+  border-bottom-color: var(--clay-red);
 }
 
 @media (max-width: 480px) {
-    .card {
-        padding: 30px 20px;
-    }
-
-    .card h1 {
-        font-size: 24px;
-    }
-
-    .card p {
-        font-size: 14px;
-    }
+  .card {
+    padding: 32px 20px;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    background-color: transparent;
+  }
+  
+  .container {
+    background-color: white;
+    align-items: flex-start;
+    padding-top: 40px;
+  }
 }

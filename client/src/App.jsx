@@ -3,32 +3,33 @@ import Login from "./components/Login";
 import Register from "./components/Registration";
 import ProfileSetup from "./components/ProfileSetup";
 import Dashboard from "./components/Dashboard";
+import PlotMappingPage from "./components/PlotMappingPage";
 
 function App() {
   return (
     <BrowserRouter>
+      <div className="contour-bg"></div>
       <Routes>
-
         <Route
           path="/"
           element={<Login />}
         />
-
         <Route
           path="/register"
           element={<Register />}
         />
-
         <Route
           path="/profile"
           element={<ProfileSetup />}
         />
-
         <Route
           path="/dashboard"
           element={<Dashboard />}
         />
-
+        <Route
+          path="/plots"
+          element={<PlotMappingPage />}
+        />
       </Routes>
     </BrowserRouter>
   );

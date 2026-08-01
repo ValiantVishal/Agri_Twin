@@ -1,18 +1,11 @@
-import axios from "axios";
-
-const API = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
-    headers: {
-        "Content-Type": "application/json",
-    },
-});
+import apiClient from "./apiClient";
 
 export const registerUser = async (userData) => {
-    return API.post("/register", userData);
+  return apiClient.post("/register", userData);
 };
 
 export const loginUser = async (userData) => {
-    return API.post("/login", userData);
+  return apiClient.post("/login", userData);
 };
 
-export default API;
+export default apiClient;
