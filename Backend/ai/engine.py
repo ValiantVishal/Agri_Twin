@@ -50,7 +50,7 @@ def _generate(prompt: str, max_new_tokens: int = 300) -> str:
             attention_mask=inputs["attention_mask"],
             max_new_tokens=max_new_tokens,
             temperature=0.2,           # Lower temperature stops hallucinated characters
-            repetition_penalty=1.15,    # Stops text loops like "3. 3. 3. 3."
+            repetition_penalty=1.15,    # Stops text loops
             do_sample=True,
             pad_token_id=tokenizer.eos_token_id
         )
