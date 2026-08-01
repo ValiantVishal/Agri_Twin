@@ -2,7 +2,7 @@ import os
 import torch
 from unsloth import FastLanguageModel
 
-# Relative imports to work regardless of module path execution
+# Relative imports
 from .crop_data import CROP_DATA
 from .climate_data import MONTHLY_RAINFALL_MM
 
@@ -10,32 +10,32 @@ ADAPTER_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "agr
 
 print(f"[AgriTwin Engine] Initializing model from: {ADAPTER_DIR}")
 
-# Load seamlessly using Unsloth (perfect for offline local directories)
 try:
     model, tokenizer = FastLanguageModel.from_pretrained(
         model_name=ADAPTER_DIR,
         max_seq_length=2048,
         load_in_4bit=True
     )
-    FastLanguageModel.for_inference(model)
+    # Disabled for_inference to prevent Qwen2Attention temp_KV attribute crash
+    model.eval()
     print("[AgriTwin Engine] SUCCESS: Model loaded and ready for inference.")
 except Exception as e:
     print(f"[AgriTwin Engine] Failed to load model: {e}")
     model, tokenizer = None, None
 
-def _generate(prompt: str, max_new_tokens: int = 250) -> str:
+def _generate(prompt: str, max_new_tokens: int = 300) -> str:
     if model is None or tokenizer is None:
         return "Error: AI model is not loaded."
 
+    # Enforce English or Tamil output strictly
     messages = [
         {
-            "role": "system",
-            "content": "You are a helpful agricultural assistant for Tamil Nadu farmers. You speak only Tamil or English. You must never generate Chinese characters under any circumstances. Keep recommendations short, clear, and in either English or Tamil."
+            "role": "system", 
+            "content": "You are an agricultural assistant for AgriTwin. You MUST respond ONLY in clear English or standard Tamil, matching the user's input language. Do not output foreign or random Unicode characters."
         },
         {"role": "user", "content": prompt}
     ]
     
-    # Return as a dict containing both input_ids and attention_mask
     inputs = tokenizer.apply_chat_template(
         messages, 
         tokenize=True, 
@@ -47,16 +47,18 @@ def _generate(prompt: str, max_new_tokens: int = 250) -> str:
     with torch.no_grad():
         outputs = model.generate(
             input_ids=inputs["input_ids"],
-            attention_mask=inputs["attention_mask"], # Explicitly pass attention mask
+            attention_mask=inputs["attention_mask"],
             max_new_tokens=max_new_tokens,
-            temperature=0.3,
+            temperature=0.2,           # Lower temperature stops hallucinated characters
+            repetition_penalty=1.15,    # Stops text loops like "3. 3. 3. 3."
             do_sample=True,
-            use_cache=True,
             pad_token_id=tokenizer.eos_token_id
         )
 
-    decoded = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    return decoded.split("assistant")[-1].strip()
+    # Decode only the newly generated tokens
+    input_length = inputs["input_ids"].shape[1]
+    decoded = tokenizer.decode(outputs[0][input_length:], skip_special_tokens=True)
+    return decoded.strip()
 
 def get_fertilizer_recommendation(crop: str, area_acres: float) -> dict:
     """Non-LLM deterministic calculations to prevent dosage hallucinations."""
@@ -80,6 +82,7 @@ def query_farm_memory(plot_id: str, question: str, logs: list[str]) -> str:
         return "No past observations have been logged for this plot yet."
 
     logs_formatted = "\n".join(f"- {log}" for log in logs)
+    
     prompt = f"""You are an agricultural assistant answering questions for plot '{plot_id}'.
 
 Logged field observations:
@@ -87,7 +90,9 @@ Logged field observations:
 
 User Question: "{question}"
 
-Instructions: Answer strictly using only the logged field observations above. If the answer is not mentioned, state that honestly. Answer in the same language as the question."""
+Instructions: 
+1. Answer strictly using only the logged field observations above. If the answer is not mentioned, state that honestly.
+2. Respond in the same language as the question (English or Tamil)."""
 
     return _generate(prompt)
 
@@ -103,6 +108,6 @@ def get_seasonal_advisory(month: str, logs: list[str]) -> str:
 Farmer's past field notes:
 {logs_text}
 
-Provide a concise irrigation advice for {m_key.capitalize()} based on historical rainfall and past notes."""
+Provide concise irrigation advice for {m_key.capitalize()} based on historical rainfall and past notes in English or Tamil."""
 
     return _generate(prompt)
