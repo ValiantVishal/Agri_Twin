@@ -1,4 +1,3 @@
-# 1. ALWAYS import unsloth first before trl, transformers, or peft
 try:
     from unsloth import FastLanguageModel
     HAS_UNSLOTH = True
@@ -10,10 +9,10 @@ import torch
 from datasets import load_from_disk
 from trl import SFTTrainer, SFTConfig
 
-# Resolve relative paths cleanly from script location
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATASET_PATH = os.path.join(BASE_DIR, "agritwin_dataset")
 OUTPUT_PATH = os.path.join(BASE_DIR, "agritwin_finetuned")
+
 
 def train():
     if not os.path.exists(DATASET_PATH):
@@ -21,10 +20,12 @@ def train():
 
     print("[Training] Loading cached dataset...")
     dataset = load_from_disk(DATASET_PATH)
+    print(f"[Training] Loaded {len(dataset)} examples.")
+    print("[Training] Sample example:\n", dataset[0]["text"][:500])
 
     print("[Training] Initializing Qwen/Qwen2.5-3B-Instruct model...")
     is_unsloth_model = False
-    
+
     try:
         model, tokenizer = FastLanguageModel.from_pretrained(
             model_name="Qwen/Qwen2.5-3B-Instruct",
@@ -64,8 +65,21 @@ def train():
             lora_dropout=0, bias="none", task_type="CAUSAL_LM"
         )
         model = get_peft_model(base_model, lora_config)
+        is_unsloth_model = False
 
-    # Configure SFT arguments using SFTConfig for modern TRL versions
+    if tokenizer.pad_token is None:
+        print("[Training] pad_token was None -- setting pad_token = eos_token")
+        tokenizer.pad_token = tokenizer.eos_token
+        model.config.pad_token_id = tokenizer.pad_token_id
+
+    im_end_id = tokenizer.convert_tokens_to_ids("<|im_end|>")
+    print(f"[Training] <|im_end|> token id: {im_end_id} (should NOT be unk_token_id={tokenizer.unk_token_id})")
+    if im_end_id == tokenizer.unk_token_id:
+        raise ValueError(
+            "<|im_end|> is not recognized as a special token. Training text formatting "
+            "will not match how the model expects chat turns to end."
+        )
+
     sft_config = SFTConfig(
         dataset_text_field="text",
         max_seq_length=2048,
@@ -79,7 +93,7 @@ def train():
         bf16=torch.cuda.is_bf16_supported(),
         logging_steps=10,
         output_dir=os.path.join(BASE_DIR, "training_outputs"),
-        save_strategy="no",       # Disables mid-run checkpoint saving to prevent PicklingError
+        save_strategy="no",
         save_total_limit=0,
         optim="adamw_8bit"
     )
@@ -94,13 +108,64 @@ def train():
     print("[Training] Training in progress...")
     trainer.train()
 
-    print(f"[Training] Saving model and config files to '{OUTPUT_PATH}'...")
-    
-    # Correct save calls: Saves adapter_config.json, weights, and tokenizer files
-    model.save_pretrained(OUTPUT_PATH)
-    tokenizer.save_pretrained(OUTPUT_PATH)
+    print(f"[Training] Merging LoRA weights and saving full model to '{OUTPUT_PATH}'...")
+    os.makedirs(OUTPUT_PATH, exist_ok=True)
 
-    print("[Training] SUCCESS: Model fine-tuning complete!")
+    if is_unsloth_model:
+        model.save_pretrained_merged(OUTPUT_PATH, tokenizer, save_method="merged_4bit")
+    else:
+        merged_model = model.merge_and_unload()
+        merged_model.save_pretrained(OUTPUT_PATH)
+        tokenizer.save_pretrained(OUTPUT_PATH)
+
+    print("[Training] SUCCESS: Model fine-tuning complete and saved.")
+
+    print("[Training] Running post-training sanity check...")
+    _sanity_check(OUTPUT_PATH)
+
+
+def _sanity_check(model_path: str):
+    if HAS_UNSLOTH:
+        test_model, test_tokenizer = FastLanguageModel.from_pretrained(
+            model_name=model_path, max_seq_length=2048, load_in_4bit=True
+        )
+        FastLanguageModel.for_inference(test_model)
+    else:
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+        test_model = AutoModelForCausalLM.from_pretrained(model_path, device_map="auto")
+        test_tokenizer = AutoTokenizer.from_pretrained(model_path)
+
+    im_end_id = test_tokenizer.convert_tokens_to_ids("<|im_end|>")
+    eos_ids = [test_tokenizer.eos_token_id]
+    if im_end_id != test_tokenizer.unk_token_id:
+        eos_ids.append(im_end_id)
+
+    messages = [
+        {"role": "system", "content": "You are an agricultural assistant for AgriTwin. Respond only in clear English."},
+        {"role": "user", "content": "What is the recommended urea dosage for paddy?"}
+    ]
+    inputs = test_tokenizer.apply_chat_template(
+        messages, tokenize=True, add_generation_prompt=True, return_tensors="pt", return_dict=True
+    ).to("cuda")
+
+    with torch.no_grad():
+        outputs = test_model.generate(
+            input_ids=inputs["input_ids"],
+            attention_mask=inputs["attention_mask"],
+            max_new_tokens=150,
+            temperature=0.3,
+            top_p=0.9,
+            repetition_penalty=1.15,
+            do_sample=True,
+            pad_token_id=test_tokenizer.eos_token_id,
+            eos_token_id=eos_ids,
+        )
+    result = test_tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
+    print("\n[Sanity Check] Model output for test question:")
+    print(result)
+    print("\n[Sanity Check] If this looks clean and stops naturally, training succeeded.")
+    print("[Sanity Check] If you see '#' loops or garbled text, do NOT proceed to integration -- debug first.\n")
+
 
 if __name__ == "__main__":
     train()
