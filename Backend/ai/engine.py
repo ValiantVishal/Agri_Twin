@@ -55,10 +55,7 @@ def _generate(prompt: str, system_prompt: str = None, max_new_tokens: int = 300)
             input_ids=inputs["input_ids"],
             attention_mask=inputs["attention_mask"],
             max_new_tokens=max_new_tokens,
-            temperature=0.3,
-            top_p=0.9,
-            repetition_penalty=1.15,
-            do_sample=True,
+            do_sample=False,
             pad_token_id=tokenizer.eos_token_id,
             eos_token_id=_eos_ids,
         )

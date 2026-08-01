@@ -81,7 +81,7 @@ def prepare_training_dataset():
 
     final_ds = Dataset.from_list(formatted_rows)
 
-    output_path = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "agritwin_dataset"))
+    output_path = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "agritwin_finetuned"))
     final_ds.save_to_disk(output_path)
     print(f"[Data Prep] SUCCESS: Prepared {len(final_ds)} samples and cached to '{output_path}'.")
 

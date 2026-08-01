@@ -63,16 +63,7 @@ export default function AIAssistantPage() {
         }));
         setMessages(formatted);
       } else {
-        // Fetch fresh daily brief advisory if no history exists yet
-        const brief = await aiService.getDailyBrief(plotId);
-        setMessages([
-          {
-            id: "brief",
-            sender: "ai",
-            text: brief.response,
-            timestamp: new Date(),
-          },
-        ]);
+        setMessages([]);
       }
     } catch (err) {
       console.error("Error loading chat history:", err);

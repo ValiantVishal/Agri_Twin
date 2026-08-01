@@ -33,6 +33,8 @@ def build_farmer_context(current_user: User, plot_id: Optional[str], db: Session
     profile_text = "No profile details set up yet."
     if profile:
         profile_text = (
+            f"Farmer Name: {current_user.name or 'Unknown'}, "
+            f"Preferred Language: {profile.language or 'Tamil'}, "
             f"Primary Crop: {profile.crop or 'Unknown'}, "
             f"Soil Type: {profile.soil_type or 'Unknown'}, "
             f"Irrigation: {profile.irrigation or 'Unknown'}, "
@@ -151,7 +153,52 @@ User Question: "{question}" """
     if question.strip():
         create_chat_message(db, current_user.id, valid_plot_id, "user", question)
 
-    response_text = _generate(prompt=user_prompt, system_prompt=system_instruction, max_new_tokens=300)
+    # 1. Search the farmer's personal records (Farmer Memory) first with strict instructions
+    if question.strip():
+        if is_tamil:
+            memory_system_instruction = (
+                "நீ ஒரு விவசாய உதவியாளர். வழங்கப்பட்டுள்ள விவசாய குறிப்புகளின் அடிப்படையில் மட்டுமே கேள்விக்கு நேரடியாக தமிழில் பதிலளிக்கவும். கூடுதல் விபரங்களையோ கற்பனையையோ தவிர்க்கவும்."
+            )
+            memory_user_prompt = f"""விவசாய குறிப்புகள்:
+{profile_text}
+
+கடந்த கால குறிப்புகள்:
+{logs_text}
+
+கேள்வி: "{question}" """
+        else:
+            memory_system_instruction = (
+                "You are an agricultural assistant for AgriTwin. "
+                "Answer the user's question strictly using the provided farmer profile and past activity logs. "
+                "If the answer is not contained within these logs, respond with exactly: "
+                "'This information is not available in your records.' Do not provide any general advice or external facts."
+            )
+            memory_user_prompt = f"""Farmer Profile:
+{profile_text}
+
+Field History / Logs:
+{logs_text}
+
+User Question: "{question}" """
+
+        memory_response = _generate(prompt=memory_user_prompt, system_prompt=memory_system_instruction, max_new_tokens=150)
+        
+        # Check if the memory query returned that it's not found
+        not_found_indicators_en = ["information is not available", "not available in your records", "not found", "does not contain"]
+        not_found_indicators_ta = ["விபரம் குறிப்பிடப்படவில்லை", "தகவல் இல்லை", "குறிப்பிடப்படவில்லை"]
+        
+        is_not_found = (
+            any(ind in memory_response.lower() for ind in not_found_indicators_en) or
+            any(ind in memory_response for ind in not_found_indicators_ta)
+        )
+
+        if not is_not_found:
+            response_text = memory_response
+        else:
+            # 2. Fallback to general agricultural knowledge base
+            response_text = _generate(prompt=user_prompt, system_prompt=system_instruction, max_new_tokens=300)
+    else:
+        response_text = _generate(prompt=user_prompt, system_prompt=system_instruction, max_new_tokens=300)
 
     create_chat_message(db, current_user.id, valid_plot_id, "ai", response_text)
 
