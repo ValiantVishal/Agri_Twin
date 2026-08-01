@@ -70,3 +70,36 @@ class PlotResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class ActivityLogCreate(BaseModel):
+    plot_id: Optional[str] = None
+    entry_text: str
+    entry_language: str = Field(..., description="Language: 'ta' or 'en'")
+    input_mode: str = Field(..., description="Input Mode: 'voice' or 'text'")
+    created_at: Optional[datetime] = None
+
+
+class ActivityLogResponse(BaseModel):
+    id: int
+    farmer_id: int
+    plot_id: Optional[str]
+    entry_text: str
+    entry_language: str
+    input_mode: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class AIChatMessageResponse(BaseModel):
+    id: int
+    farmer_id: int
+    plot_id: Optional[str]
+    sender: str
+    message_text: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

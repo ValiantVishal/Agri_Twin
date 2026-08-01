@@ -170,6 +170,54 @@ export default function Dashboard() {
           </Link>
         )}
 
+        {/* Daily Activity Log */}
+        <Link to="/activity-log" style={{
+          display: "flex",
+          flexDirection: "column",
+          padding: "20px",
+          textDecoration: "none",
+          background: "white",
+          borderRadius: "8px",
+          border: "1px solid var(--border-soil)",
+          transition: "transform 0.2s"
+        }}>
+          <h3 style={{ margin: "0 0 8px 0", color: "var(--clay-red)", fontSize: "1.2rem" }}>
+            {isTamil ? "தினசரி செயல்பாட்டுப் பதிவு" : "Daily Activity Log"}
+          </h3>
+          <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "0.9rem", lineHeight: "1.5" }}>
+            {isTamil 
+              ? "விதைப்பு, நீர்ப்பாசனம் மற்றும் கள அவதானிப்புகளை குரல் அல்லது உரை மூலம் பதிவு செய்யவும்." 
+              : "Log daily work: sowing, irrigations, fertilizing, or crop observations using voice or text."}
+          </p>
+          <span style={{ marginTop: "16px", color: "var(--clay-red)", fontWeight: "700", fontSize: "0.9rem" }}>
+            {isTamil ? "பதிவு செய்ய" : "Log Work"} &rarr;
+          </span>
+        </Link>
+
+        {/* AI Assistant */}
+        <Link to="/assistant" style={{
+          display: "flex",
+          flexDirection: "column",
+          padding: "20px",
+          textDecoration: "none",
+          background: "white",
+          borderRadius: "8px",
+          border: "1px solid var(--border-soil)",
+          transition: "transform 0.2s"
+        }}>
+          <h3 style={{ margin: "0 0 8px 0", color: "var(--paddy-green)", fontSize: "1.2rem" }}>
+            {isTamil ? "விவசாய ஆலோசனைக் கூடம்" : "AgriTwin Advisor"}
+          </h3>
+          <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "0.9rem", lineHeight: "1.5" }}>
+            {isTamil 
+              ? "பரிந்துரைகள் மற்றும் ஆலோசனைகளைப் பெறவும். கேள்விகளை குரல் மூலமாகக் கேளுங்கள்." 
+              : "Get personalized crop recommendations and soil tasks. Ask questions via voice."}
+          </p>
+          <span style={{ marginTop: "16px", color: "var(--paddy-green)", fontWeight: "700", fontSize: "0.9rem" }}>
+            {isTamil ? "ஆலோசிக்க" : "Ask Advisor"} &rarr;
+          </span>
+        </Link>
+
         {/* Profile Settings */}
         <Link to="/profile" style={{
           display: "flex",

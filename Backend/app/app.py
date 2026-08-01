@@ -8,6 +8,8 @@ from .schemas import Register, Login, ProfileCreate
 from .crud import create_user, get_user_by_email, create_profile
 from .auth import verify_password, create_access_token, get_current_user
 from .routers.plots import router as plots_router
+from .routers.activity import router as activity_router
+from .routers.ai import router as ai_router
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -144,5 +146,7 @@ def get_profile(
     }
 
 
-# Include Plots Router
+# Include Routers
 app.include_router(plots_router)
+app.include_router(activity_router)
+app.include_router(ai_router)

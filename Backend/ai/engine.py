@@ -27,7 +27,13 @@ def _generate(prompt: str, max_new_tokens: int = 250) -> str:
     if model is None or tokenizer is None:
         return "Error: AI model is not loaded."
 
-    messages = [{"role": "user", "content": prompt}]
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a helpful agricultural assistant for Tamil Nadu farmers. You speak only Tamil or English. You must never generate Chinese characters under any circumstances. Keep recommendations short, clear, and in either English or Tamil."
+        },
+        {"role": "user", "content": prompt}
+    ]
     
     # Return as a dict containing both input_ids and attention_mask
     inputs = tokenizer.apply_chat_template(

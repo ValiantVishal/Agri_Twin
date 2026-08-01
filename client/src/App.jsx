@@ -4,6 +4,8 @@ import Register from "./components/Registration";
 import ProfileSetup from "./components/ProfileSetup";
 import Dashboard from "./components/Dashboard";
 import PlotMappingPage from "./components/PlotMappingPage";
+import ActivityLogPage from "./components/ActivityLogPage";
+import AIAssistantPage from "./components/AIAssistantPage";
 
 function App() {
   return (
@@ -29,6 +31,14 @@ function App() {
         <Route
           path="/plots"
           element={<PlotMappingPage />}
+        />
+        <Route
+          path="/activity-log"
+          element={<ActivityLogPage />}
+        />
+        <Route
+          path="/assistant"
+          element={<AIAssistantPage />}
         />
       </Routes>
     </BrowserRouter>

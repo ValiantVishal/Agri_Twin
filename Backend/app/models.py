@@ -64,3 +64,17 @@ class ActivityLog(Base):
 
     farmer = relationship("User")
     plot = relationship("Plot")
+
+
+class AIChatMessage(Base):
+    __tablename__ = "ai_chat_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    farmer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    plot_id = Column(String(36), ForeignKey("plots.id"), nullable=True)
+    sender = Column(String(10), nullable=False)  # 'user' or 'ai'
+    message_text = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+
+    farmer = relationship("User")
+    plot = relationship("Plot")
