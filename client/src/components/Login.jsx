@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../api/auth";
+import apiClient from "../api/apiClient";
 import "../css/Login.css";
 
 function Login() {
@@ -29,12 +30,16 @@ function Login() {
       );
 
       alert("Login Successful");
-      navigate("/profile");
-
-      console.log(response.data);
-
-
-      // Navigate to dashboard later
+      try {
+        const profileRes = await apiClient.get("/profile");
+        if (profileRes.data && profileRes.data.phone) {
+          navigate("/dashboard");
+        } else {
+          navigate("/profile");
+        }
+      } catch (err) {
+        navigate("/profile");
+      }
 
     } catch (error) {
       alert(

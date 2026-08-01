@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { saveProfile } from "../api/profile";
+import apiClient from "../api/apiClient";
 
 function ProfileSetup() {
   const navigate = useNavigate();
@@ -17,6 +18,31 @@ function ProfileSetup() {
     irrigation: "",
     soilType: ""
   });
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const response = await apiClient.get("/profile");
+        if (response.data) {
+          setForm({
+            phone: response.data.phone || "",
+            state: response.data.state || "",
+            district: response.data.district || "",
+            village: response.data.village || "",
+            language: response.data.language || "Tamil",
+            farmerType: response.data.farmerType || "",
+            experience: response.data.experience !== undefined ? String(response.data.experience) : "",
+            crop: response.data.crop || "",
+            irrigation: response.data.irrigation || "",
+            soilType: response.data.soilType || ""
+          });
+        }
+      } catch (error) {
+        console.log("No existing profile found to pre-fill.");
+      }
+    };
+    loadProfile();
+  }, []);
 
   const handleChange = (e) => {
     setForm({
