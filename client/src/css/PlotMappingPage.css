@@ -1,78 +1,90 @@
 :root {
-  --primary: #10b981;
-  --primary-hover: #059669;
-  --secondary: #3b82f6;
-  --danger: #ef4444;
-  --danger-hover: #dc2626;
+  --primary: var(--paddy-green);
+  --primary-hover: var(--paddy-green-hover);
+  --secondary: var(--clay-red);
+  --danger: var(--clay-red);
+  --danger-hover: var(--clay-red-hover);
   --bg-dark: #0f172a;
-  --card-bg: rgba(255, 255, 255, 0.85);
-  --card-border: rgba(226, 232, 240, 0.8);
-  --text-main: #1e293b;
-  --text-muted: #64748b;
-  --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  --card-bg: white;
+  --card-border: var(--border-soil);
+  --text-main: var(--text-main);
+  --text-muted: var(--text-muted);
+  --shadow: var(--shadow-organic);
 }
 
 .plot-mapping-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  background-color: var(--bg-parchment);
   color: var(--text-main);
-  padding: 16px;
+  padding: 24px;
   box-sizing: border-box;
 }
 
 .mapping-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  padding: 12px 18px;
-  border-radius: 16px;
-  border: 1px solid var(--card-border);
-  box-shadow: var(--shadow);
+  align-items: baseline;
+  margin-bottom: 32px;
+  border-bottom: 2px solid var(--border-soil);
+  padding-bottom: 16px;
+  background: none;
+  backdrop-filter: none;
+  padding-left: 0;
+  padding-right: 0;
+  border-radius: 0;
+  box-shadow: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
 }
 
 .mapping-header h1 {
-  font-size: 1.25rem;
+  font-size: 2rem;
   font-weight: 700;
-  color: #065f46;
+  color: var(--paddy-green);
   margin: 0;
 }
 
 .header-controls {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   align-items: center;
 }
 
 .lang-select {
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-soil);
   background-color: white;
   font-weight: 600;
   cursor: pointer;
+  min-width: 120px;
 }
 
 .btn-back {
   background: none;
-  border: none;
+  border: 1px solid var(--border-soil);
   color: var(--text-muted);
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.9rem;
+  gap: 8px;
+  font-size: 0.85rem;
+  padding: 8px 16px;
   font-weight: 600;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-back:hover {
+  background-color: var(--bg-parchment-dark);
 }
 
 .mapping-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 20px;
+  gap: 24px;
   flex: 1;
 }
 
@@ -90,10 +102,9 @@
 
 .glass-card {
   background: var(--card-bg);
-  backdrop-filter: blur(12px);
   border: 1px solid var(--card-border);
-  border-radius: 20px;
-  padding: 20px;
+  border-radius: 8px;
+  padding: 24px;
   box-shadow: var(--shadow);
 }
 
@@ -102,27 +113,27 @@
   align-items: flex-start;
   gap: 10px;
   padding: 12px;
-  border-radius: 12px;
+  border-radius: 6px;
   font-size: 0.85rem;
   margin-bottom: 12px;
 }
 
 .alert-warning {
-  background-color: #fef3c7;
-  border: 1px solid #fcd34d;
-  color: #92400e;
+  background-color: #fffbeb;
+  border: 1px solid #fef3c7;
+  color: var(--warm-ochre);
 }
 
 .alert-danger {
-  background-color: #fee2e2;
-  border: 1px solid #fca5a5;
-  color: #991b1b;
+  background-color: #fef2f2;
+  border: 1px solid #fee2e2;
+  color: var(--clay-red);
 }
 
 .alert-success {
-  background-color: #d1fae5;
-  border: 1px solid #6ee7b7;
-  color: #065f46;
+  background-color: #f0fdf4;
+  border: 1px solid #d1fae5;
+  color: var(--paddy-green);
 }
 
 .gps-metrics {
@@ -133,28 +144,31 @@
 }
 
 .metric-badge {
-  background: rgba(241, 245, 249, 0.8);
-  padding: 10px;
-  border-radius: 12px;
+  background: var(--bg-parchment-dark);
+  padding: 12px;
+  border-radius: 6px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  border: 1px solid var(--border-soil);
 }
 
 .metric-badge .label {
   font-size: 0.75rem;
   color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 .metric-badge .val {
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-main);
 }
 
 .metric-badge .val.highlight {
-  color: var(--primary-hover);
+  color: var(--primary);
 }
 
 .action-buttons {
@@ -168,9 +182,9 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 14px 20px;
-  border-radius: 12px;
-  font-size: 1rem;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 0.95rem;
   font-weight: 700;
   border: none;
   cursor: pointer;
@@ -189,9 +203,13 @@
 }
 
 .btn-secondary {
-  background-color: #f1f5f9;
-  color: #475569;
-  border: 1px solid #cbd5e1;
+  background-color: var(--bg-parchment-dark);
+  color: var(--text-main);
+  border: 1px solid var(--border-soil);
+}
+
+.btn-secondary:hover {
+  background-color: #e2e0d5;
 }
 
 .btn-danger {
@@ -199,30 +217,54 @@
   color: white;
 }
 
+.btn-danger:hover {
+  background-color: var(--danger-hover);
+}
+
 .btn-save {
-  background-color: var(--secondary);
+  background-color: var(--primary);
   color: white;
+}
+
+.btn-save:hover {
+  background-color: var(--primary-hover);
 }
 
 .btn-outline {
   background-color: transparent;
-  color: var(--primary-hover);
-  border: 2px solid var(--primary);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  padding: 8px 16px;
+  font-size: 0.85rem;
+}
+
+.btn-outline:hover {
+  background-color: rgba(27, 77, 44, 0.05);
 }
 
 .btn-danger-icon {
   background: none;
-  border: none;
+  border: 1px solid var(--border-soil);
   color: var(--danger);
   cursor: pointer;
-  padding: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-danger-icon:hover {
+  background-color: #fee2e2;
+  border-color: #fca5a5;
 }
 
 .plot-name-input {
   width: 100%;
-  padding: 12px 14px;
-  border: 2px solid #cbd5e1;
-  border-radius: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-soil);
+  border-radius: 6px;
   font-size: 0.95rem;
   margin-bottom: 12px;
   box-sizing: border-box;
@@ -231,14 +273,15 @@
 .plot-name-input:focus {
   border-color: var(--primary);
   outline: none;
+  box-shadow: 0 0 0 3px rgba(27, 77, 44, 0.08);
 }
 
 .map-card {
   height: 400px;
   overflow: hidden;
-  border-radius: 24px;
+  border-radius: 8px;
   box-shadow: var(--shadow);
-  border: 2px solid var(--card-border);
+  border: 1px solid var(--border-soil);
 }
 
 @media (min-width: 1024px) {
@@ -249,7 +292,7 @@
 }
 
 .vertex-badge {
-  background-color: #0f172a;
+  background-color: var(--bg-dark);
   color: white;
   border: 2px solid white;
   border-radius: 50%;
@@ -317,10 +360,18 @@
   margin-top: 10px;
 }
 
+.saved-plots-section h2 {
+  font-size: 1.5rem;
+  color: var(--paddy-green);
+  border-bottom: 2px solid var(--border-soil);
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+}
+
 .plots-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: 20px;
   margin-top: 12px;
 }
 
@@ -339,22 +390,24 @@
 .plot-card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 16px;
-  padding: 16px;
+  border-radius: 8px;
+  padding: 20px;
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .plot-card-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
 .plot-card-header h3 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.15rem;
+  color: var(--paddy-green);
 }
 
 .status-badge {
@@ -362,8 +415,9 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: 20px;
+  font-weight: 600;
 }
 
 .status-badge.synced {
@@ -377,10 +431,10 @@
 }
 
 .plot-card-body {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .metric-row {
@@ -388,21 +442,40 @@
   justify-content: space-between;
 }
 
+.metric-row span {
+  color: var(--text-muted);
+}
+
 .drift-warning {
   margin-top: 8px;
   background-color: #fffbeb;
-  color: #d97706;
-  padding: 8px;
-  border-radius: 8px;
+  border: 1px solid #fef3c7;
+  color: var(--warm-ochre);
+  padding: 8px 12px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .plot-card-actions {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-top: auto;
-  border-top: 1px solid #e2e8f0;
-  padding-top: 12px;
+  border-top: 1px solid var(--border-soil);
+  padding-top: 16px;
+}
+
+.empty-state {
+  border: 2px dashed var(--clay-red);
+  background-color: white;
+  border-radius: 8px;
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: 16px;
 }
