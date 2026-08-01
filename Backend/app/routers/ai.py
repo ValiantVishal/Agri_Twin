@@ -29,7 +29,7 @@ def get_month_name(date: datetime) -> str:
 
 def build_farmer_context(current_user: User, plot_id: Optional[str], db: Session):
     profile = db.query(FarmerProfile).filter(FarmerProfile.user_id == current_user.id).first()
-    
+
     profile_text = "No profile details set up yet."
     if profile:
         profile_text = (
@@ -39,7 +39,6 @@ def build_farmer_context(current_user: User, plot_id: Optional[str], db: Session
             f"Farming Experience: {profile.experience or 0} years."
         )
 
-    # Validate and get plot context
     plot_text = "No plot selected or mapped."
     valid_plot_id = None
 
@@ -52,8 +51,7 @@ def build_farmer_context(current_user: User, plot_id: Optional[str], db: Session
                 f"Area: {plot.area_acres:.2f} acres ({plot.area_cents:.1f} cents), "
                 f"Perimeter: {plot.perimeter_m:.1f} meters."
             )
-            
-    # Get last 15 activity logs
+
     logs = (
         db.query(ActivityLog)
         .filter(ActivityLog.farmer_id == current_user.id)
@@ -61,7 +59,7 @@ def build_farmer_context(current_user: User, plot_id: Optional[str], db: Session
         .limit(15)
         .all()
     )
-    
+
     logs_text = "No activity logs recorded yet."
     if logs:
         logs_text = "\n".join(
@@ -69,7 +67,7 @@ def build_farmer_context(current_user: User, plot_id: Optional[str], db: Session
             f"(mode: {log.input_mode}, lang: {log.entry_language})"
             for log in logs
         )
-        
+
     return profile_text, plot_text, logs_text, profile, valid_plot_id
 
 
@@ -80,10 +78,9 @@ def ask_ai(
     db: Session = Depends(get_db)
 ):
     profile_text, plot_text, logs_text, profile, valid_plot_id = build_farmer_context(current_user, req.plot_id, db)
-    
+
     question = req.question or ""
-    
-    # Simple language detection based on Tamil character codes
+
     is_tamil = any("\u0b80" <= char <= "\u0bff" for char in question)
     if not question and profile and profile.language == "Tamil":
         is_tamil = True
@@ -91,7 +88,6 @@ def ask_ai(
     current_month = get_month_name(datetime.utcnow())
 
     if not question.strip():
-        # Proactive advisory mode
         if is_tamil:
             system_instruction = (
                 "நீ ஒரு விவசாய உதவியாளர். தமிழ் மொழியில் மட்டும் பதிலளிக்கவும். "
@@ -124,7 +120,6 @@ Current Month: {current_month}
 
 Provide 2-3 concise, actionable task recommendations for today as bullet points."""
     else:
-        # Question-Answering mode
         if is_tamil:
             system_instruction = (
                 "நீ ஒரு விவசாய உதவியாளர். தமிழ் மொழியில் மட்டும் நேரடியாக பதிலளிக்கவும். "
@@ -153,14 +148,11 @@ Field History:
 
 User Question: "{question}" """
 
-    # Save user question if present (using safe valid_plot_id to prevent foreign key errors)
     if question.strip():
         create_chat_message(db, current_user.id, valid_plot_id, "user", question)
 
-    # Generate output using chat format
     response_text = _generate(prompt=user_prompt, system_prompt=system_instruction, max_new_tokens=300)
 
-    # Save AI response safely
     create_chat_message(db, current_user.id, valid_plot_id, "ai", response_text)
 
     return {"response": response_text}
