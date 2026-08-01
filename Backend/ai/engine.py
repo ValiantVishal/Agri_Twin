@@ -16,34 +16,28 @@ try:
         max_seq_length=2048,
         load_in_4bit=True
     )
-    # Disabled for_inference to prevent Qwen2Attention temp_KV attribute crash
     model.eval()
     print("[AgriTwin Engine] SUCCESS: Model loaded and ready for inference.")
 except Exception as e:
     print(f"[AgriTwin Engine] Failed to load model: {e}")
     model, tokenizer = None, None
 
-def _generate(prompt: str, max_new_tokens: int = 300) -> str:
+
+def _generate_with_chat_template(system_prompt: str, user_prompt: str, max_new_tokens: int = 300) -> str:
+    """Helper to format prompts into Qwen chat structure to avoid repetition loops."""
     if model is None or tokenizer is None:
         return "Error: AI model is not loaded."
 
-    # Enforce English or Tamil output strictly
     messages = [
-        {
-            "role": "system", 
-            "content": "You are an agricultural assistant for AgriTwin. You MUST respond ONLY in clear English or standard Tamil, matching the user's input language. Do not output foreign or random Unicode characters."
-        },
-        {"role": "user", "content": prompt}
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt}
     ]
 
-    print("\n" + "="*30 + " AI ENGINE PROMPT START " + "="*30)
-    print(prompt)
-    print("="*30 + "  AI ENGINE PROMPT END  " + "="*30 + "\n")
-    
+    # Convert to Qwen chat format
     inputs = tokenizer.apply_chat_template(
-        messages, 
-        tokenize=True, 
-        add_generation_prompt=True, 
+        messages,
+        tokenize=True,
+        add_generation_prompt=True,
         return_tensors="pt",
         return_dict=True
     ).to("cuda")
@@ -53,65 +47,34 @@ def _generate(prompt: str, max_new_tokens: int = 300) -> str:
             input_ids=inputs["input_ids"],
             attention_mask=inputs["attention_mask"],
             max_new_tokens=max_new_tokens,
-            temperature=0.2,           # Lower temperature stops hallucinated characters
-            repetition_penalty=1.15,    # Stops text loops
+            temperature=0.3,
+            top_p=0.9,
+            repetition_penalty=1.25,  # High repetition penalty prevents loops like "sqlite sqlite"
             do_sample=True,
             pad_token_id=tokenizer.eos_token_id
         )
 
-    # Decode only the newly generated tokens
-    input_length = inputs["input_ids"].shape[1]
-    decoded = tokenizer.decode(outputs[0][input_length:], skip_special_tokens=True)
+    # Extract only newly generated tokens
+    input_len = inputs["input_ids"].shape[1]
+    decoded = tokenizer.decode(outputs[0][input_len:], skip_special_tokens=True)
     return decoded.strip()
 
-def get_fertilizer_recommendation(crop: str, area_acres: float) -> dict:
-    """Non-LLM deterministic calculations to prevent dosage hallucinations."""
-    crop_key = crop.lower().strip()
-    if crop_key not in CROP_DATA:
-        return {"error": f"Crop '{crop}' not found. Supported: {list(CROP_DATA.keys())}"}
-
-    base = CROP_DATA[crop_key]
-    return {
-        "crop": crop_key,
-        "area_acres": area_acres,
-        "seed_kg": round(base["seed_kg_per_acre"] * area_acres, 2),
-        "urea_kg": round(base["urea_kg_per_acre"] * area_acres, 2),
-        "dap_kg": round(base["dap_kg_per_acre"] * area_acres, 2),
-        "potash_kg": round(base["potash_kg_per_acre"] * area_acres, 2),
-        "source": base["source"]
-    }
 
 def query_farm_memory(plot_id: str, question: str, logs: list[str]) -> str:
-    if not logs:
-        return "No past observations have been logged for this plot yet."
-
-    logs_formatted = "\n".join(f"- {log}" for log in logs)
+    system_prompt = "You are an agricultural assistant for AgriTwin. You MUST respond ONLY in Tamil or English."
     
-    prompt = f"""You are an agricultural assistant answering questions for plot '{plot_id}'.
-
-Logged field observations:
+    logs_formatted = "\n".join(f"- {log}" for log in logs) if logs else "No observations logged."
+    user_prompt = f"""Plot: '{plot_id}'
+Field Notes:
 {logs_formatted}
 
-User Question: "{question}"
+Question: "{question}"
+Provide a clear answer in Tamil or English."""
 
-Instructions: 
-1. Answer strictly using only the logged field observations above. If the answer is not mentioned, state that honestly.
-2. Respond in the same language as the question (English or Tamil)."""
+    return _generate_with_chat_template(system_prompt, user_prompt)
 
-    return _generate(prompt)
 
-def get_seasonal_advisory(month: str, logs: list[str]) -> str:
-    m_key = month.lower().strip()
-    rainfall = MONTHLY_RAINFALL_MM.get(m_key)
-
-    if rainfall is None:
-        return f"No historical climate data available for '{month}'."
-
-    logs_text = "\n".join(f"- {log}" for log in logs) if logs else "No plot history notes logged."
-    prompt = f"""Historical average rainfall for {m_key.capitalize()} is {rainfall} mm.
-Farmer's past field notes:
-{logs_text}
-
-Provide concise irrigation advice for {m_key.capitalize()} based on historical rainfall and past notes in English or Tamil."""
-
-    return _generate(prompt)
+def get_daily_brief_ai(profile_summary: str) -> str:
+    """Used for daily recommendations."""
+    system_prompt = "நீ ஒரு விவசாய உதவியாளர். தமிழ் மொழியில் மட்டும் சுருக்கமான அறிவுரைகளை வழங்கவும்."
+    return _generate_with_chat_template(system_prompt, profile_summary)
