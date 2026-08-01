@@ -35,6 +35,10 @@ def _generate(prompt: str, max_new_tokens: int = 300) -> str:
         },
         {"role": "user", "content": prompt}
     ]
+
+    print("\n" + "="*30 + " AI ENGINE PROMPT START " + "="*30)
+    print(prompt)
+    print("="*30 + "  AI ENGINE PROMPT END  " + "="*30 + "\n")
     
     inputs = tokenizer.apply_chat_template(
         messages, 

@@ -125,6 +125,11 @@ def get_activity_logs(
 # --- AIChatMessage CRUD operations ---
 
 def create_chat_message(db: Session, farmer_id: int, plot_id: Optional[str], sender: str, message_text: str) -> AIChatMessage:
+    if plot_id:
+        exists = db.query(Plot).filter(Plot.id == plot_id).first()
+        if not exists:
+            plot_id = None
+
     db_msg = AIChatMessage(
         farmer_id=farmer_id,
         plot_id=plot_id,

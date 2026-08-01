@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { aiService } from "../api/aiService";
 import { plotService, getProfile } from "../api/plotService";
 import { Mic, MicOff, Send, ArrowLeft, Volume2, VolumeX, Sparkles, RefreshCw } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 export default function AIAssistantPage() {
   const navigate = useNavigate();
@@ -298,9 +299,9 @@ export default function AIAssistantPage() {
               </div>
             )}
             
-            <p style={{ margin: 0, fontSize: "0.95rem", lineHeight: "1.5", whiteSpace: "pre-wrap" }}>
-              {msg.text}
-            </p>
+            <div style={{ margin: 0, fontSize: "0.95rem", lineHeight: "1.5" }}>
+              <ReactMarkdown>{msg.text}</ReactMarkdown>
+            </div>
           </div>
         ))}
 

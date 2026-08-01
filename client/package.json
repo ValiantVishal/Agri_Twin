@@ -10,9 +10,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@turf/turf": "^7.2.0",
     "axios": "^1.19.0",
+    "idb-keyval": "^6.2.1",
+    "i18next": "^24.2.2",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^0.474.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "react-i18next": "^15.4.0",
+    "react-markdown": "^9.0.3",
+    "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
